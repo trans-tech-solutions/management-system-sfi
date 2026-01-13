@@ -1,7 +1,6 @@
-import { useState } from 'react'
-
 function Versions(): React.JSX.Element {
-  const [versions] = useState(window.electron.process.versions)
+  const electronApi = (window as unknown as { electron?: { process?: { versions?: NodeJS.ProcessVersions } } }).electron
+  const versions = electronApi?.process?.versions ?? process.versions
 
   return (
     <ul className="versions">

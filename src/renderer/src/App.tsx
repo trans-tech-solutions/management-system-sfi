@@ -1,95 +1,152 @@
-import { JSX, useState } from 'react'
+import { useState, useEffect, useMemo, JSX } from 'react'
+import logo from './assets/SFI.svg'
+import './assets/theme.css'
+import { FileSpreadsheet, ShoppingCart, Package, Settings } from 'lucide-react'
+import PageCompras from './components/PageCompras'
+import PageEstoque from './components/PageEstoque'
+import PagePrecos from './components/PagePrecos'
+
+// Tipos
+type Material = { id: number; material: string; valor: number }
+type Estoque = { material: string; peso: number }
 
 function App(): JSX.Element {
-  const [form, setForm] = useState({
-    fornecedor: '',
-    material: 'Latinha',
-    peso: '',
-    valor: ''
+  const [activeTab, setActiveTab] = useState('compras')
+  const [db, setDb] = useState<{ precos: Material[]; estoque: Estoque[] }>({
+    precos: [],
+    estoque: []
   })
-  const [msg, setMsg] = useState('')
 
-  const materiais = ['Latinha', 'Cobre', 'Ferro', 'Papelão', 'Plástico']
+  // Form States
+  const [compra, setCompra] = useState({ fornecedor: '', material: '', peso: '' })
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault()
-    setMsg('Salvando...')
-
-    try {
-      // @ts-ignore (O TypeScript vai reclamar do window.api, depois a gente arruma com types)
-      const resp = await window.api.salvarCompra({
-        fornecedor: form.fornecedor,
-        material: form.material,
-        peso: Number(form.peso),
-        valor: Number(form.valor)
-      })
-
-      if (resp.sucesso) {
-        setMsg(`Salvo em: ${resp.caminho}`)
-        setForm({ ...form, fornecedor: '', peso: '', valor: '' }) // Limpa campos
-      }
-    } catch (error) {
-      setMsg('Erro ao salvar!')
-      console.error(error)
+  // Carregar dados ao iniciar
+  async function carregarDados(): Promise<void> {
+    const dados = await window.api.getDados()
+    setDb(dados)
+    if (dados.precos.length > 0 && !compra.material) {
+      setCompra((prev) => ({ ...prev, material: dados.precos[0].material }))
     }
   }
 
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const dados = await window.api.getDados()
+      if (!mounted) return
+      setDb(dados)
+      if (dados.precos.length > 0) {
+        setCompra((prev) => ({ ...prev, material: prev.material || dados.precos[0].material }))
+      }
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  // Lógica de Cálculo Automático (valor computado)
+  const valorTotal = useMemo(() => {
+    if (compra.material && compra.peso) {
+      const itemPreco = db.precos.find((p) => p.material === compra.material)
+      if (itemPreco) {
+        return parseFloat(compra.peso) * itemPreco.valor
+      }
+    }
+    return 0
+  }, [compra.peso, compra.material, db.precos])
+
+  async function handleSalvarCompra(e: React.FormEvent): Promise<void> {
+    e.preventDefault()
+    setLoading(true)
+    await window.api.salvarCompra({ ...compra, peso: parseFloat(compra.peso) })
+    alert('Compra salva e Estoque atualizado!')
+    setCompra({ ...compra, peso: '', fornecedor: '' }) // Limpa campos, mantém material
+    await carregarDados() // Recarrega estoque
+    setLoading(false)
+  }
+
+  async function gerarRelatorio(tipo: string): Promise<void> {
+    await window.api.gerarExcel(tipo)
+  }
+
+  // --- LAYOUT PRINCIPAL ---
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-10 flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-6">🏗️ Sucatão Forte - Controle</h1>
-
-      <form 
-        onSubmit={handleSubmit}
-        className="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-md gap-4 flex flex-col"
-      >
-        <div>
-          <label className="block text-sm mb-1">Fornecedor</label>
-          <input 
-            className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-            value={form.fornecedor}
-            onChange={e => setForm({...form, fornecedor: e.target.value})}
-            placeholder="Ex: Sr. João"
-          />
+    <div className="sucatao-app flex h-screen text-slate-900 font-sans">
+      {/* Sidebar */}
+      <aside className="bg-slate-900 text-white flex flex-col">
+        <div className="p-6 border-b border-slate-800 flex flex-col items-center">
+          <img src={logo} alt="SFI" className="w-20 h-20 mb-3 object-contain" />
+          <h2 className="font-bold text-lg text-white">SUCATÃO FORTE ITAGUAÍ</h2>
+          <p className="text-xs text-slate-200">Controle</p>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">Material</label>
-          <select 
-            className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-            value={form.material}
-            onChange={e => setForm({...form, material: e.target.value})}
+        <nav className="flex-1 p-4 space-y-2">
+          {[
+            { id: 'compras', label: 'Nova Compra', icon: ShoppingCart },
+            { id: 'estoque', label: 'Controle Estoque', icon: Package },
+            { id: 'precos', label: 'Tabela de Preços', icon: Settings },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              aria-pressed={activeTab === item.id}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg transition ${
+                activeTab === item.id
+                  ? 'bg-blue-700 text-white'
+                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <item.icon size={20} />
+              <span className="font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-slate-800">
+          <button
+            onClick={() => gerarRelatorio('dia')}
+            className="w-full flex items-center gap-2 text-sm text-green-400 hover:text-green-300 transition"
           >
-            {materiais.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+            <FileSpreadsheet size={16} /> Relatório do Dia
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto p-8">
+        <div className="sucatao-header">
+          <div className="title">
+            {activeTab === 'compras'
+              ? 'Nova Compra'
+              : activeTab === 'estoque'
+                ? 'Estoque'
+                : 'Tabela de Preços'}
+          </div>
+          <div className="actions">
+            <button className="btn btn-ghost" onClick={() => carregarDados()}>
+              Atualizar Dados
+            </button>
+            <button className="btn btn-primary" onClick={() => gerarRelatorio('dia')}>
+              <FileSpreadsheet size={16} className="mr-2" />
+              Relatório do Dia
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm mb-1">Peso (KG)</label>
-            <input 
-              type="number" step="0.1"
-              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-              value={form.peso}
-              onChange={e => setForm({...form, peso: e.target.value})}
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm mb-1">Valor (R$)</label>
-            <input 
-              type="number" step="0.01"
-              className="w-full p-2 rounded bg-slate-700 border border-slate-600"
-              value={form.valor}
-              onChange={e => setForm({...form, valor: e.target.value})}
-            />
-          </div>
-        </div>
-
-        <button type="submit" className="bg-green-600 hover:bg-green-500 p-3 rounded font-bold mt-4 transition">
-          💾 SALVAR NO EXCEL
-        </button>
-
-        {msg && <p className="text-xs text-yellow-400 mt-2 text-center">{msg}</p>}
-      </form>
+        {activeTab === 'compras' && (
+          <PageCompras
+            db={db}
+            compra={compra}
+            setCompra={setCompra}
+            loading={loading}
+            handleSalvarCompra={handleSalvarCompra}
+            valorTotal={valorTotal}
+          />
+        )}
+        {activeTab === 'estoque' && <PageEstoque db={db} setDb={setDb} carregarDados={carregarDados} gerarRelatorio={gerarRelatorio} />}
+        {activeTab === 'precos' && <PagePrecos db={db} setDb={setDb} carregarDados={carregarDados} />}
+      </main>
     </div>
   )
 }

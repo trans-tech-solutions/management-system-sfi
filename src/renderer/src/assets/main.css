@@ -1,13 +1,17 @@
+/* Tailwind directives - required for Tailwind CSS build and useful for IntelliSense */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import './base.css';
 
 body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-image: url('./wavy-lines.svg');
-  background-size: cover;
-  user-select: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  background: none;
+  -webkit-user-select: none;
 }
 
 code {
@@ -27,11 +31,12 @@ code {
 }
 
 #root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin-bottom: 80px;
+  width: 100%;
+  height: 100vh;
+  display: block;
+  margin: 0;
+  padding: 24px;
+  box-sizing: border-box;
 }
 
 .logo {

@@ -1,4 +1,17 @@
 {
+  "tailwindCSS.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html",
+    "javascript": "html",
+    "javascriptreact": "html"
+  },
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.experimental.classRegex": [
+    ["classnames\\(([^)]*)\\)", "(?:'|\")([\\w-:/]+)(?:'|\")"],
+    ["tw`([^`]*)`", "([^`]*)"]
+  ]
+}
+{
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
