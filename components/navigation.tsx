@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
-import { ShoppingCart, Package, DollarSign, LayoutDashboard, LogOut } from "lucide-react"
+import { ShoppingCart, Package, DollarSign, LayoutDashboard, LogOut, Wallet } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,7 @@ export function Navigation() {
     { href: "/compras", label: "Compras", icon: ShoppingCart },
     { href: "/precos", label: "Tabela de Preços", icon: DollarSign },
     { href: "/estoque", label: "Estoque", icon: Package },
+    { href: "/caixa", label: "Caixa", icon: Wallet },
   ]
 
   const handleLogout = async () => {

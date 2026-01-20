@@ -122,7 +122,7 @@ export default function PrecosPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-1">
+          <Card className="lg:col-span-1 h-72">
             <CardHeader>
               <CardTitle>Adicionar Material</CardTitle>
             </CardHeader>
@@ -159,7 +159,7 @@ export default function PrecosPage() {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 max-h-[calc(100vh-14rem)] overflow-auto">
             <CardHeader>
               <CardTitle>Materiais Cadastrados ({materials.length})</CardTitle>
             </CardHeader>

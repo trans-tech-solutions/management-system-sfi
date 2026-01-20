@@ -1,3 +1,5 @@
+import ExcelJS from "exceljs"
+
 type PurchaseExport = {
   material_name: string
   quantity_kg: number
@@ -13,79 +15,579 @@ type InventoryExport = {
   last_updated: string
 }
 
-export function exportPurchasesToExcel(purchases: PurchaseExport[]) {
-  // Create CSV content with proper formatting
-  const headers = ["Material", "Quantidade (kg)", "Preço/kg (R$)", "Valor Total (R$)", "Data", "Hora"]
-
-  const rows = purchases.map((p) => [
-    p.material_name,
-    Number(p.quantity_kg).toFixed(2),
-    Number(p.price_per_kg).toFixed(2),
-    Number(p.total_value).toFixed(2),
-    new Date(p.purchase_date).toLocaleDateString("pt-BR"),
-    new Date(p.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-  ])
-
-  // Add total row
-  const total = purchases.reduce((sum, p) => sum + Number(p.total_value), 0)
-  rows.push(["", "", "", `TOTAL: R$ ${total.toFixed(2)}`, "", ""])
-
-  // Create CSV string
-  const csvContent = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n")
-
-  // Add BOM for Excel to recognize UTF-8
-  const BOM = "\uFEFF"
-  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" })
-
-  // Generate filename with date
-  const date = new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")
-  const filename = `Compras_${date}.csv`
-
-  // Download
-  const link = document.createElement("a")
-  link.href = URL.createObjectURL(blob)
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+type CashTransactionExport = {
+  transaction_type: "entrada" | "saida"
+  description: string
+  amount: number
+  transaction_date: string
+  created_at: string
+  is_automatic: boolean
 }
 
-export function exportInventoryToExcel(inventory: InventoryExport[]) {
-  // Create CSV content with proper formatting
-  const headers = ["Material", "Quantidade em Estoque (kg)", "Última Atualização"]
+type DailyBalanceExport = {
+  opening_balance: number
+  closing_balance: number
+}
 
-  const rows = inventory.map((item) => [
-    item.material_name,
-    Number(item.quantity_kg).toFixed(2),
-    new Date(item.last_updated).toLocaleDateString("pt-BR", {
+// Cores da marca Sucatão
+const COLORS = {
+  red: "F54337",
+  yellow: "FCBE1D",
+  blue: "157EC2",
+  white: "FFFFFF",
+  lightGray: "F5F5F5",
+  black: "222222",
+}
+
+export async function exportPurchasesToExcel(purchases: PurchaseExport[]) {
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet("Compras do Dia", {
+    properties: { defaultColWidth: 20 },
+  })
+
+  const today = new Date()
+
+  // Título principal - linha 1
+  worksheet.mergeCells("A1:F1")
+  const titleCell = worksheet.getCell("A1")
+  titleCell.value = "SUCATÃO FORTE ITAGUAÍ - RELATÓRIO DE COMPRAS"
+  titleCell.font = { bold: true, size: 16, color: { argb: "FF" + COLORS.white } }
+  titleCell.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF" + COLORS.red },
+  }
+  titleCell.alignment = { horizontal: "center", vertical: "middle" }
+  worksheet.getRow(1).height = 30
+
+  // Data do relatório - linha 2
+  worksheet.mergeCells("A2:F2")
+  const dateCell = worksheet.getCell("A2")
+  dateCell.value = `Relatório gerado em: ${today.toLocaleDateString("pt-BR")} às ${today.toLocaleTimeString("pt-BR")}`
+  dateCell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
+  dateCell.alignment = { horizontal: "center" }
+  worksheet.getRow(2).height = 20
+
+  // Linha vazia
+  worksheet.getRow(3).height = 10
+
+  // Cabeçalhos - linha 4
+  const headers = ["Material", "Quantidade (kg)", "Preço/kg", "Valor Total", "Data", "Hora"]
+  const headerRow = worksheet.getRow(4)
+  headers.forEach((header, index) => {
+    const cell = headerRow.getCell(index + 1)
+    cell.value = header
+    cell.font = { bold: true, size: 12, color: { argb: "FF" + COLORS.white } }
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF" + COLORS.blue },
+    }
+    cell.alignment = { horizontal: "center", vertical: "middle" }
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    }
+  })
+  headerRow.height = 25
+
+  // Dados das compras
+  purchases.forEach((purchase, index) => {
+    const rowIndex = 5 + index
+    const row = worksheet.getRow(rowIndex)
+    const isEven = index % 2 === 0
+
+    // Material
+    const materialCell = row.getCell(1)
+    materialCell.value = purchase.material_name
+    materialCell.alignment = { horizontal: "left", vertical: "middle" }
+
+    // Quantidade
+    const quantityCell = row.getCell(2)
+    quantityCell.value = Number(purchase.quantity_kg)
+    quantityCell.numFmt = "#,##0.00"
+    quantityCell.alignment = { horizontal: "right", vertical: "middle" }
+
+    // Preço/kg
+    const priceCell = row.getCell(3)
+    priceCell.value = Number(purchase.price_per_kg)
+    priceCell.numFmt = "R$ #,##0.00"
+    priceCell.alignment = { horizontal: "right", vertical: "middle" }
+
+    // Valor Total
+    const totalCell = row.getCell(4)
+    totalCell.value = Number(purchase.total_value)
+    totalCell.numFmt = "R$ #,##0.00"
+    totalCell.alignment = { horizontal: "right", vertical: "middle" }
+
+    // Data
+    const dateCell = row.getCell(5)
+    dateCell.value = new Date(purchase.purchase_date).toLocaleDateString("pt-BR")
+    dateCell.alignment = { horizontal: "center", vertical: "middle" }
+
+    // Hora
+    const timeCell = row.getCell(6)
+    timeCell.value = new Date(purchase.created_at).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    timeCell.alignment = { horizontal: "center", vertical: "middle" }
+
+    // Aplicar estilo zebrado e bordas
+    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      if (colNumber <= 6) {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF" + (isEven ? COLORS.white : COLORS.lightGray) },
+        }
+        cell.border = {
+          top: { style: "thin", color: { argb: "FFD0D0D0" } },
+          left: { style: "thin", color: { argb: "FFD0D0D0" } },
+          bottom: { style: "thin", color: { argb: "FFD0D0D0" } },
+          right: { style: "thin", color: { argb: "FFD0D0D0" } },
+        }
+        cell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
+      }
+    })
+
+    row.height = 20
+  })
+
+  // Linha vazia antes do total
+  const emptyRowIndex = 5 + purchases.length
+  worksheet.getRow(emptyRowIndex).height = 10
+
+  // Linha de totais
+  const totalRowIndex = emptyRowIndex + 1
+  const totalRow = worksheet.getRow(totalRowIndex)
+
+  const totalLabel = totalRow.getCell(1)
+  totalLabel.value = "TOTAL GERAL"
+  totalLabel.font = { bold: true, size: 13, color: { argb: "FF" + COLORS.black } }
+  totalLabel.alignment = { horizontal: "center", vertical: "middle" }
+
+  const totalKg = purchases.reduce((sum, p) => sum + Number(p.quantity_kg), 0)
+  const totalKgCell = totalRow.getCell(2)
+  totalKgCell.value = totalKg
+  totalKgCell.numFmt = "#,##0.00"
+  totalKgCell.font = { bold: true, size: 13, color: { argb: "FF" + COLORS.black } }
+  totalKgCell.alignment = { horizontal: "right", vertical: "middle" }
+
+  totalRow.getCell(3).value = ""
+
+  const totalValue = purchases.reduce((sum, p) => sum + Number(p.total_value), 0)
+  const totalValueCell = totalRow.getCell(4)
+  totalValueCell.value = totalValue
+  totalValueCell.numFmt = "R$ #,##0.00"
+  totalValueCell.font = { bold: true, size: 13, color: { argb: "FF" + COLORS.black } }
+  totalValueCell.alignment = { horizontal: "right", vertical: "middle" }
+
+  totalRow.getCell(5).value = ""
+  totalRow.getCell(6).value = ""
+
+  // Estilo da linha de totais
+  totalRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+    if (colNumber <= 6) {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF" + COLORS.yellow },
+      }
+      cell.border = {
+        top: { style: "medium", color: { argb: "FF" + COLORS.black } },
+        left: { style: "medium", color: { argb: "FF" + COLORS.black } },
+        bottom: { style: "medium", color: { argb: "FF" + COLORS.black } },
+        right: { style: "medium", color: { argb: "FF" + COLORS.black } },
+      }
+    }
+  })
+  totalRow.height = 25
+
+  // Ajustar largura das colunas
+  worksheet.getColumn(1).width = 30 // Material
+  worksheet.getColumn(2).width = 20 // Quantidade
+  worksheet.getColumn(3).width = 18 // Preço
+  worksheet.getColumn(4).width = 20 // Total
+  worksheet.getColumn(5).width = 15 // Data
+  worksheet.getColumn(6).width = 12 // Hora
+
+  // Gerar e baixar arquivo
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `Compras_${today.toLocaleDateString("pt-BR").replace(/\//g, "-")}.xlsx`
+  link.click()
+  window.URL.revokeObjectURL(url)
+}
+
+export async function exportInventoryToExcel(inventory: InventoryExport[]) {
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet("Estoque", {
+    properties: { defaultColWidth: 25 },
+  })
+
+  const today = new Date()
+
+  // Título principal - linha 1
+  worksheet.mergeCells("A1:C1")
+  const titleCell = worksheet.getCell("A1")
+  titleCell.value = "SUCATÃO FORTE ITAGUAÍ - CONTROLE DE ESTOQUE"
+  titleCell.font = { bold: true, size: 16, color: { argb: "FF" + COLORS.white } }
+  titleCell.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF" + COLORS.red },
+  }
+  titleCell.alignment = { horizontal: "center", vertical: "middle" }
+  worksheet.getRow(1).height = 30
+
+  // Data do relatório - linha 2
+  worksheet.mergeCells("A2:C2")
+  const dateCell = worksheet.getCell("A2")
+  dateCell.value = `Relatório gerado em: ${today.toLocaleDateString("pt-BR")} às ${today.toLocaleTimeString("pt-BR")}`
+  dateCell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
+  dateCell.alignment = { horizontal: "center" }
+  worksheet.getRow(2).height = 20
+
+  // Linha vazia
+  worksheet.getRow(3).height = 10
+
+  // Cabeçalhos - linha 4
+  const headers = ["Material", "Quantidade em Estoque (kg)", "Última Atualização"]
+  const headerRow = worksheet.getRow(4)
+  headers.forEach((header, index) => {
+    const cell = headerRow.getCell(index + 1)
+    cell.value = header
+    cell.font = { bold: true, size: 12, color: { argb: "FF" + COLORS.white } }
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF" + COLORS.blue },
+    }
+    cell.alignment = { horizontal: "center", vertical: "middle" }
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    }
+  })
+  headerRow.height = 25
+
+  // Dados do estoque
+  inventory.forEach((item, index) => {
+    const rowIndex = 5 + index
+    const row = worksheet.getRow(rowIndex)
+    const isEven = index % 2 === 0
+
+    // Material
+    const materialCell = row.getCell(1)
+    materialCell.value = item.material_name
+    materialCell.alignment = { horizontal: "left", vertical: "middle" }
+
+    // Quantidade
+    const quantityCell = row.getCell(2)
+    quantityCell.value = Number(item.quantity_kg)
+    quantityCell.numFmt = "#,##0.00"
+    quantityCell.alignment = { horizontal: "right", vertical: "middle" }
+
+    // Última atualização
+    const updatedCell = row.getCell(3)
+    updatedCell.value = new Date(item.last_updated).toLocaleString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }),
-  ])
+    })
+    updatedCell.alignment = { horizontal: "center", vertical: "middle" }
 
-  // Add total row
+    // Aplicar estilo zebrado e bordas
+    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      if (colNumber <= 3) {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF" + (isEven ? COLORS.white : COLORS.lightGray) },
+        }
+        cell.border = {
+          top: { style: "thin", color: { argb: "FFD0D0D0" } },
+          left: { style: "thin", color: { argb: "FFD0D0D0" } },
+          bottom: { style: "thin", color: { argb: "FFD0D0D0" } },
+          right: { style: "thin", color: { argb: "FFD0D0D0" } },
+        }
+        cell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
+      }
+    })
+
+    row.height = 20
+  })
+
+  // Linha vazia antes do total
+  const emptyRowIndex = 5 + inventory.length
+  worksheet.getRow(emptyRowIndex).height = 10
+
+  // Linha de totais
+  const totalRowIndex = emptyRowIndex + 1
+  const totalRow = worksheet.getRow(totalRowIndex)
+
+  const totalLabel = totalRow.getCell(1)
+  totalLabel.value = "TOTAL GERAL EM ESTOQUE"
+  totalLabel.font = { bold: true, size: 13, color: { argb: "FF" + COLORS.black } }
+  totalLabel.alignment = { horizontal: "center", vertical: "middle" }
+
   const totalKg = inventory.reduce((sum, item) => sum + Number(item.quantity_kg), 0)
-  rows.push(["TOTAL", `${totalKg.toFixed(2)} kg`, ""])
+  const totalKgCell = totalRow.getCell(2)
+  totalKgCell.value = totalKg
+  totalKgCell.numFmt = "#,##0.00"
+  totalKgCell.font = { bold: true, size: 13, color: { argb: "FF" + COLORS.black } }
+  totalKgCell.alignment = { horizontal: "right", vertical: "middle" }
 
-  // Create CSV string
-  const csvContent = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n")
+  totalRow.getCell(3).value = ""
 
-  // Add BOM for Excel to recognize UTF-8
-  const BOM = "\uFEFF"
-  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" })
+  // Estilo da linha de totais
+  totalRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+    if (colNumber <= 3) {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF" + COLORS.yellow },
+      }
+      cell.border = {
+        top: { style: "medium", color: { argb: "FF" + COLORS.black } },
+        left: { style: "medium", color: { argb: "FF" + COLORS.black } },
+        bottom: { style: "medium", color: { argb: "FF" + COLORS.black } },
+        right: { style: "medium", color: { argb: "FF" + COLORS.black } },
+      }
+    }
+  })
+  totalRow.height = 25
 
-  // Generate filename with date
-  const date = new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")
-  const filename = `Estoque_${date}.csv`
+  // Ajustar largura das colunas
+  worksheet.getColumn(1).width = 35 // Material
+  worksheet.getColumn(2).width = 30 // Quantidade
+  worksheet.getColumn(3).width = 25 // Última Atualização
 
-  // Download
+  // Gerar e baixar arquivo
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  })
+  const url = window.URL.createObjectURL(blob)
   const link = document.createElement("a")
-  link.href = URL.createObjectURL(blob)
-  link.download = filename
-  document.body.appendChild(link)
+  link.href = url
+  link.download = `Estoque_${today.toLocaleDateString("pt-BR").replace(/\//g, "-")}.xlsx`
   link.click()
-  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
+export async function exportCashFlowToExcel(transactions: CashTransactionExport[], balance: DailyBalanceExport) {
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet("Fluxo de Caixa", {
+    properties: { defaultColWidth: 20 },
+  })
+
+  const today = new Date()
+
+  // Título principal - linha 1
+  worksheet.mergeCells("A1:E1")
+  const titleCell = worksheet.getCell("A1")
+  titleCell.value = "SUCATÃO FORTE ITAGUAÍ - CONTROLE DE CAIXA"
+  titleCell.font = { bold: true, size: 16, color: { argb: "FF" + COLORS.white } }
+  titleCell.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF" + COLORS.red },
+  }
+  titleCell.alignment = { horizontal: "center", vertical: "middle" }
+  worksheet.getRow(1).height = 30
+
+  // Data do relatório - linha 2
+  worksheet.mergeCells("A2:E2")
+  const dateCell = worksheet.getCell("A2")
+  dateCell.value = `Relatório gerado em: ${today.toLocaleDateString("pt-BR")} às ${today.toLocaleTimeString("pt-BR")}`
+  dateCell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
+  dateCell.alignment = { horizontal: "center" }
+  worksheet.getRow(2).height = 20
+
+  // Linha vazia
+  worksheet.getRow(3).height = 10
+
+  // Resumo de saldos - linhas 4-6
+  const summaryData = [
+    { label: "Saldo Inicial:", value: balance.opening_balance, color: COLORS.blue },
+    {
+      label: "Total Entradas:",
+      value: transactions.filter((t) => t.transaction_type === "entrada").reduce((sum, t) => sum + Number(t.amount), 0),
+      color: "00A65A",
+    },
+    {
+      label: "Total Saídas:",
+      value: transactions.filter((t) => t.transaction_type === "saida").reduce((sum, t) => sum + Number(t.amount), 0),
+      color: "DD4B39",
+    },
+  ]
+
+  summaryData.forEach((item, index) => {
+    const rowIndex = 4 + index
+    const row = worksheet.getRow(rowIndex)
+
+    const labelCell = row.getCell(1)
+    labelCell.value = item.label
+    labelCell.font = { bold: true, size: 12, color: { argb: "FF" + COLORS.black } }
+    labelCell.alignment = { horizontal: "right", vertical: "middle" }
+
+    const valueCell = row.getCell(2)
+    valueCell.value = item.value
+    valueCell.numFmt = "R$ #,##0.00"
+    valueCell.font = { bold: true, size: 12, color: { argb: "FF" + item.color } }
+    valueCell.alignment = { horizontal: "left", vertical: "middle" }
+
+    row.height = 22
+  })
+
+  // Saldo atual - linha 7
+  const currentBalanceRow = worksheet.getRow(7)
+  const balanceLabel = currentBalanceRow.getCell(1)
+  balanceLabel.value = "SALDO ATUAL:"
+  balanceLabel.font = { bold: true, size: 14, color: { argb: "FF" + COLORS.white } }
+  balanceLabel.alignment = { horizontal: "right", vertical: "middle" }
+  balanceLabel.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF" + COLORS.blue },
+  }
+
+  const currentBalance = balance.opening_balance + summaryData[1].value - summaryData[2].value
+  const balanceValue = currentBalanceRow.getCell(2)
+  balanceValue.value = currentBalance
+  balanceValue.numFmt = "R$ #,##0.00"
+  balanceValue.font = { bold: true, size: 14, color: { argb: "FF" + COLORS.white } }
+  balanceValue.alignment = { horizontal: "left", vertical: "middle" }
+  balanceValue.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF" + COLORS.blue },
+  }
+  currentBalanceRow.height = 25
+
+  // Linha vazia
+  worksheet.getRow(8).height = 10
+
+  // Cabeçalhos - linha 9
+  const headers = ["Tipo", "Descrição", "Valor", "Hora", "Origem"]
+  const headerRow = worksheet.getRow(9)
+  headers.forEach((header, index) => {
+    const cell = headerRow.getCell(index + 1)
+    cell.value = header
+    cell.font = { bold: true, size: 12, color: { argb: "FF" + COLORS.white } }
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF" + COLORS.blue },
+    }
+    cell.alignment = { horizontal: "center", vertical: "middle" }
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    }
+  })
+  headerRow.height = 25
+
+  // Dados das transações
+  transactions.forEach((transaction, index) => {
+    const rowIndex = 10 + index
+    const row = worksheet.getRow(rowIndex)
+    const isEven = index % 2 === 0
+
+    // Tipo
+    const typeCell = row.getCell(1)
+    typeCell.value = transaction.transaction_type === "entrada" ? "ENTRADA" : "SAÍDA"
+    typeCell.font = {
+      bold: true,
+      size: 11,
+      color: { argb: "FF" + (transaction.transaction_type === "entrada" ? "00A65A" : "DD4B39") },
+    }
+    typeCell.alignment = { horizontal: "center", vertical: "middle" }
+
+    // Descrição
+    const descCell = row.getCell(2)
+    descCell.value = transaction.description
+    descCell.alignment = { horizontal: "left", vertical: "middle" }
+
+    // Valor
+    const amountCell = row.getCell(3)
+    amountCell.value = Number(transaction.amount)
+    amountCell.numFmt = "R$ #,##0.00"
+    amountCell.font = {
+      size: 11,
+      color: { argb: "FF" + (transaction.transaction_type === "entrada" ? "00A65A" : "DD4B39") },
+    }
+    amountCell.alignment = { horizontal: "right", vertical: "middle" }
+
+    // Hora
+    const timeCell = row.getCell(4)
+    timeCell.value = new Date(transaction.created_at).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    timeCell.alignment = { horizontal: "center", vertical: "middle" }
+
+    // Origem
+    const originCell = row.getCell(5)
+    originCell.value = transaction.is_automatic ? "Automático" : "Manual"
+    originCell.alignment = { horizontal: "center", vertical: "middle" }
+
+    // Aplicar estilo zebrado e bordas
+    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      if (colNumber <= 5) {
+        if (!cell.fill || !(cell.fill as any).fgColor) {
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FF" + (isEven ? COLORS.white : COLORS.lightGray) },
+          }
+        }
+        cell.border = {
+          top: { style: "thin", color: { argb: "FFD0D0D0" } },
+          left: { style: "thin", color: { argb: "FFD0D0D0" } },
+          bottom: { style: "thin", color: { argb: "FFD0D0D0" } },
+          right: { style: "thin", color: { argb: "FFD0D0D0" } },
+        }
+        if (!cell.font || !cell.font.color) {
+          cell.font = { ...cell.font, size: 11, color: { argb: "FF" + COLORS.black } }
+        }
+      }
+    })
+
+    row.height = 20
+  })
+
+  // Ajustar largura das colunas
+  worksheet.getColumn(1).width = 15 // Tipo
+  worksheet.getColumn(2).width = 45 // Descrição
+  worksheet.getColumn(3).width = 18 // Valor
+  worksheet.getColumn(4).width = 12 // Hora
+  worksheet.getColumn(5).width = 15 // Origem
+
+  // Gerar e baixar arquivo
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `Caixa_${today.toLocaleDateString("pt-BR").replace(/\//g, "-")}.xlsx`
+  link.click()
+  window.URL.revokeObjectURL(url)
 }
