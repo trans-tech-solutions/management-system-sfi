@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Edit2, Save, X, Download, Minus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { exportInventoryToExcel } from "@/lib/excel-export"
+import { formatDateTimeBrazil } from "@/lib/date-utils"
 
 type InventoryItem = {
   id: string
@@ -154,16 +155,7 @@ export default function EstoquePage() {
                   <div key={item.id} className="flex items-center justify-between rounded-lg border border-border p-4">
                     <div className="flex-1">
                       <p className="font-medium">{item.material_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Atualizado:{" "}
-                        {new Date(item.last_updated).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+                      <p className="text-xs text-muted-foreground">Atualizado: {formatDateTimeBrazil(item.last_updated)}</p>
                     </div>
 
                     {editingId === item.id ? (

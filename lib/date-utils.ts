@@ -34,6 +34,11 @@ export function formatDateTimeBrazil(datetime: string): string {
   return d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
 }
 
+export function formatTimeBrazil(datetime: string): string {
+  const d = new Date(datetime)
+  return d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })
+}
+
 export function getDateFromUTCTimestamp(utcTimestamp: string): string {
   const date = new Date(utcTimestamp)
   const brazilTime = new Date(date.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }))

@@ -2,13 +2,14 @@ import { cn } from "@/lib/utils"
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
+import { getTodayBrazil } from "@/lib/date-utils"
 import { ShoppingCart, Package, DollarSign } from "lucide-react"
 
 export default async function HomePage() {
   const supabase = await createClient()
 
-  // Get today's purchases
-  const today = new Date().toISOString().split("T")[0]
+  // Get today's purchases (Brazil timezone)
+  const today = getTodayBrazil()
   const { data: todayPurchases, error: purchasesError } = await supabase
     .from("purchases")
     .select("*")

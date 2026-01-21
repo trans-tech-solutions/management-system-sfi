@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { createClient } from "@/lib/supabase/client"
 import { Edit2, Plus, Save, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { formatDateTimeBrazil } from "@/lib/date-utils"
 
 type MaterialPrice = {
   id: string
@@ -174,12 +175,8 @@ export default function PrecosPage() {
                       <div className="flex-1">
                         <p className="font-medium">{material.material_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          Atualizado:{" "}
-                          {new Date(material.updated_at).toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })}
+                          Atualizado: {" "}
+                          {formatDateTimeBrazil(material.updated_at)}
                         </p>
                       </div>
 

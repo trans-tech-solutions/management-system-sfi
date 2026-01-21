@@ -1,4 +1,5 @@
 import ExcelJS from "exceljs"
+import { formatDateBrazil, formatTimeBrazil, formatDateTimeBrazil } from "./date-utils"
 
 type PurchaseExport = {
   material_name: string
@@ -63,7 +64,9 @@ export async function exportPurchasesToExcel(purchases: PurchaseExport[]) {
   // Data do relatório - linha 2
   worksheet.mergeCells("A2:F2")
   const dateCell = worksheet.getCell("A2")
-  dateCell.value = `Relatório gerado em: ${today.toLocaleDateString("pt-BR")} às ${today.toLocaleTimeString("pt-BR")}`
+  dateCell.value = `Relatório gerado em: ${formatDateBrazil(today.toISOString())} às ${formatTimeBrazil(
+    today.toISOString()
+  )}`
   dateCell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
   dateCell.alignment = { horizontal: "center" }
   worksheet.getRow(2).height = 20
@@ -124,15 +127,12 @@ export async function exportPurchasesToExcel(purchases: PurchaseExport[]) {
 
     // Data
     const dateCell = row.getCell(5)
-    dateCell.value = new Date(purchase.purchase_date).toLocaleDateString("pt-BR")
+    dateCell.value = formatDateBrazil(purchase.purchase_date)
     dateCell.alignment = { horizontal: "center", vertical: "middle" }
 
     // Hora
     const timeCell = row.getCell(6)
-    timeCell.value = new Date(purchase.created_at).toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+    timeCell.value = formatTimeBrazil(purchase.created_at)
     timeCell.alignment = { horizontal: "center", vertical: "middle" }
 
     // Aplicar estilo zebrado e bordas
@@ -222,7 +222,7 @@ export async function exportPurchasesToExcel(purchases: PurchaseExport[]) {
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement("a")
   link.href = url
-  link.download = `Compras_${today.toLocaleDateString("pt-BR").replace(/\//g, "-")}.xlsx`
+  link.download = `Compras_${formatDateBrazil(today.toISOString()).replace(/\//g, "-")}.xlsx`
   link.click()
   window.URL.revokeObjectURL(url)
 }
@@ -251,7 +251,9 @@ export async function exportInventoryToExcel(inventory: InventoryExport[]) {
   // Data do relatório - linha 2
   worksheet.mergeCells("A2:C2")
   const dateCell = worksheet.getCell("A2")
-  dateCell.value = `Relatório gerado em: ${today.toLocaleDateString("pt-BR")} às ${today.toLocaleTimeString("pt-BR")}`
+  dateCell.value = `Relatório gerado em: ${formatDateBrazil(today.toISOString())} às ${formatTimeBrazil(
+    today.toISOString()
+  )}`
   dateCell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
   dateCell.alignment = { horizontal: "center" }
   worksheet.getRow(2).height = 20
@@ -300,13 +302,7 @@ export async function exportInventoryToExcel(inventory: InventoryExport[]) {
 
     // Última atualização
     const updatedCell = row.getCell(3)
-    updatedCell.value = new Date(item.last_updated).toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+    updatedCell.value = formatDateTimeBrazil(item.last_updated)
     updatedCell.alignment = { horizontal: "center", vertical: "middle" }
 
     // Aplicar estilo zebrado e bordas
@@ -383,7 +379,7 @@ export async function exportInventoryToExcel(inventory: InventoryExport[]) {
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement("a")
   link.href = url
-  link.download = `Estoque_${today.toLocaleDateString("pt-BR").replace(/\//g, "-")}.xlsx`
+  link.download = `Estoque_${formatDateBrazil(today.toISOString()).replace(/\//g, "-")}.xlsx`
   link.click()
   window.URL.revokeObjectURL(url)
 }
@@ -412,7 +408,9 @@ export async function exportCashFlowToExcel(transactions: CashTransactionExport[
   // Data do relatório - linha 2
   worksheet.mergeCells("A2:E2")
   const dateCell = worksheet.getCell("A2")
-  dateCell.value = `Relatório gerado em: ${today.toLocaleDateString("pt-BR")} às ${today.toLocaleTimeString("pt-BR")}`
+  dateCell.value = `Relatório gerado em: ${formatDateBrazil(today.toISOString())} às ${formatTimeBrazil(
+    today.toISOString()
+  )}`
   dateCell.font = { size: 11, color: { argb: "FF" + COLORS.black } }
   dateCell.alignment = { horizontal: "center" }
   worksheet.getRow(2).height = 20
@@ -536,10 +534,7 @@ export async function exportCashFlowToExcel(transactions: CashTransactionExport[
 
     // Hora
     const timeCell = row.getCell(4)
-    timeCell.value = new Date(transaction.created_at).toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+    timeCell.value = formatTimeBrazil(transaction.created_at)
     timeCell.alignment = { horizontal: "center", vertical: "middle" }
 
     // Origem
@@ -587,7 +582,7 @@ export async function exportCashFlowToExcel(transactions: CashTransactionExport[
   const url = window.URL.createObjectURL(blob)
   const link = document.createElement("a")
   link.href = url
-  link.download = `Caixa_${today.toLocaleDateString("pt-BR").replace(/\//g, "-")}.xlsx`
+  link.download = `Caixa_${formatDateBrazil(today.toISOString()).replace(/\//g, "-")}.xlsx`
   link.click()
   window.URL.revokeObjectURL(url)
 }

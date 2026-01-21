@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowDownCircle, ArrowUpCircle, DollarSign, Download, TrendingUp } from "lucide-react"
 import { exportCashFlowToExcel } from "@/lib/excel-export";
-import { getTodayBrazil } from "@/lib/date-utils";
+import { getTodayBrazil, formatTimeBrazil } from "@/lib/date-utils";
 
 type CashTransaction = {
   id: string
@@ -323,7 +323,7 @@ export default function CaixaPage() {
                         <div className="flex-1">
                           <p className="font-medium">{transaction.description}</p>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{new Date(transaction.created_at).toLocaleTimeString("pt-BR")}</span>
+                            <span>{formatTimeBrazil(transaction.created_at)}</span>
                             {transaction.is_automatic && (
                               <span className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700">Automático</span>
                             )}

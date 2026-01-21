@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/client"
 import { Plus, Download } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { exportPurchasesToExcel } from "@/lib/excel-export"
+import { formatTimeBrazil, getTodayBrazil } from "@/lib/date-utils"
+
 
 type MaterialPrice = {
   id: string
@@ -55,7 +57,7 @@ export default function ComprasPage() {
   }
 
   const loadTodayPurchases = async () => {
-    const today = new Date().toISOString().split("T")[0]
+    const today = getTodayBrazil()
     const { data, error } = await supabase
       .from("purchases")
       .select("*")
@@ -94,7 +96,7 @@ export default function ComprasPage() {
       quantity_kg: quantityNum,
       price_per_kg: material.price_per_kg,
       total_value: totalValue,
-      purchase_date: new Date().toISOString().split("T")[0],
+      purchase_date: getTodayBrazil(),
     })
 
     if (error) {
@@ -221,12 +223,7 @@ export default function ComprasPage() {
                         <p className="font-semibold text-[var(--color-primary)]">
                           R$ {Number(purchase.total_value).toFixed(2)}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(purchase.created_at).toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{formatTimeBrazil(purchase.created_at)}</p>
                       </div>
                     </div>
                   ))}
