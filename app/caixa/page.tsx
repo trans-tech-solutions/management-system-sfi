@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowDownCircle, ArrowUpCircle, DollarSign, Download, TrendingUp } from "lucide-react"
 import { exportCashFlowToExcel } from "@/lib/excel-export";
 import { getTodayBrazil, formatTimeBrazil } from "@/lib/date-utils";
+import ConfirmDialog from "@/components/ui/confirm-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 type CashTransaction = {
   id: string
@@ -41,6 +43,10 @@ export default function CaixaPage() {
   const [amount, setAmount] = useState("")
 
   const supabase = createClient()
+  const { toast } = useToast()
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -125,7 +131,16 @@ export default function CaixaPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja excluir esta transação?")) return
+    // open confirmation modal
+    setPendingDeleteId(id)
+    setShowDeleteConfirm(true)
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteId) return
+    const id = pendingDeleteId
+    setShowDeleteConfirm(false)
+    setPendingDeleteId(null)
 
     const { error } = await supabase.from("cash_transactions").delete().eq("id", id)
 
@@ -175,10 +190,47 @@ export default function CaixaPage() {
             <h1 className="text-3xl font-bold tracking-tight">Controle de Caixa</h1>
             <p className="text-muted-foreground">Gerencie as entradas e saídas do dia</p>
           </div>
-          <Button variant="outline" className="gap-2 bg-transparent" onClick={handleExport}>
-            <Download className="h-4 w-4" />
-            Exportar Resumo do Dia
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2 bg-transparent" onClick={handleExport}>
+              <Download className="h-4 w-4" />
+              Exportar Resumo do Dia
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2 hover:bg-destructive/50 transition-colors"
+              onClick={() => setShowCleanupConfirm(true)}
+            >
+              Limpar Antigos
+            </Button>
+            <ConfirmDialog
+              open={showCleanupConfirm}
+              title="Apagar registros antigos do caixa"
+              description="Deseja apagar transações e saldos antigos? Essa ação é irreversível."
+              confirmLabel="Apagar"
+              cancelLabel="Cancelar"
+              onCancel={() => setShowCleanupConfirm(false)}
+              onConfirm={async () => {
+                setShowCleanupConfirm(false)
+                const resp = await fetch('/api/cleanup/caixa', { method: 'POST' })
+                const json = await resp.json()
+                if (resp.ok && json.success) {
+                  toast({ title: 'Sucesso', description: 'Registros antigos de caixa apagados!' })
+                  loadData()
+                } else {
+                  toast({ title: 'Erro', description: json?.error || 'Falha ao apagar registros.', variant: 'destructive' })
+                }
+              }}
+            />
+            <ConfirmDialog
+              open={showDeleteConfirm}
+              title="Excluir transação"
+              description="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
+              confirmLabel="Excluir"
+              cancelLabel="Cancelar"
+              onCancel={() => setShowDeleteConfirm(false)}
+              onConfirm={confirmDelete}
+            />
+          </div>
         </div>
 
         {/* Resumo do Caixa */}

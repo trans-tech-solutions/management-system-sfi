@@ -14,6 +14,7 @@ import { Plus, Download } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { exportPurchasesToExcel } from "@/lib/excel-export"
 import { formatTimeBrazil, getTodayBrazil } from "@/lib/date-utils"
+import ConfirmDialog from "@/components/ui/confirm-dialog"
 
 
 type MaterialPrice = {
@@ -40,6 +41,7 @@ export default function ComprasPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const supabase = createClient()
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
 
   useEffect(() => {
     loadMaterials()
@@ -141,10 +143,38 @@ export default function ComprasPage() {
             <h1 className="text-3xl font-bold text-balance">Registrar Compra</h1>
             <p className="text-muted-foreground">Adicione novas compras de materiais</p>
           </div>
-          <Button variant="outline" className="gap-2 bg-transparent" onClick={handleExportPurchases}>
-            <Download className="h-4 w-4" />
-            Exportar Compras do Dia
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2 bg-transparent" onClick={handleExportPurchases}>
+              <Download className="h-4 w-4" />
+              Exportar Compras do Dia
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2 hover:bg-destructive/50 transition-colors"
+              onClick={() => setShowCleanupConfirm(true)}
+            >
+              Limpar Antigos
+            </Button>
+          </div>
+          <ConfirmDialog
+            open={showCleanupConfirm}
+            title="Apagar compras antigas"
+            description="Deseja apagar registro de compras antigos? Essa ação é irreversível."
+            confirmLabel="Apagar"
+            cancelLabel="Cancelar"
+            onCancel={() => setShowCleanupConfirm(false)}
+            onConfirm={async () => {
+              setShowCleanupConfirm(false)
+              const resp = await fetch('/api/cleanup/purchases', { method: 'POST' })
+              const json = await resp.json()
+              if (resp.ok && json.success) {
+                toast({ title: 'Sucesso', description: `Registros antigos apagados!` })
+                loadTodayPurchases()
+              } else {
+                toast({ title: 'Erro', description: json?.error || 'Falha ao apagar registros.', variant: 'destructive' })
+              }
+            }}
+          />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
