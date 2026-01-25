@@ -160,7 +160,7 @@ export default function PrecosPage() {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2 max-h-[calc(100vh-14rem)] overflow-auto">
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Materiais Cadastrados ({materials.length})</CardTitle>
             </CardHeader>

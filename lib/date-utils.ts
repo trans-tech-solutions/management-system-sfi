@@ -25,8 +25,22 @@ export function getYesterdayBrazil(): string {
 }
 
 export function formatDateBrazil(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date + "T12:00:00") : date
-  return d.toLocaleDateString("pt-BR")
+  let d: Date
+  if (typeof date === "string") {
+    // If the string already contains time (ISO), parse directly, otherwise assume it's a YYYY-MM-DD date
+    d = date.includes("T") ? new Date(date) : new Date(date + "T12:00:00")
+  } else {
+    d = date
+  }
+
+  if (isNaN(d.getTime())) {
+    // fallback to current Brazil date
+    const now = new Date()
+    const brazilNow = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }))
+    return brazilNow.toLocaleDateString("pt-BR")
+  }
+
+  return d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
 }
 
 export function formatDateTimeBrazil(datetime: string): string {

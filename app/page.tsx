@@ -36,7 +36,7 @@ export default async function HomePage() {
     },
     {
       title: "Total em Estoque",
-      value: `${totalInventoryKg.toFixed(0)} kg`,
+      value: `${totalInventoryKg.toFixed(2)} kg`,
       subtitle: `${inventory?.length || 0} materiais`,
       icon: Package,
       color: "text-[var(--color-secondary)]",
@@ -63,7 +63,7 @@ export default async function HomePage() {
           {stats.map((stat) => {
             const Icon = stat.icon
             return (
-              <Card key={stat.title}>
+              <Card key={stat.title} className="hover:scale-102 transition-transform">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
                   <Icon className={cn("h-5 w-5", stat.color)} />
@@ -77,8 +77,8 @@ export default async function HomePage() {
           })}
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-2">
-          <Card>
+        <div className="mt-8 grid gap-6 lg:grid-cols-2 ">
+          <Card className="max-h-[55vh] overflow-auto">
             <CardHeader>
               <CardTitle>Compras Recentes</CardTitle>
             </CardHeader>
@@ -106,7 +106,7 @@ export default async function HomePage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="max-h-[55vh] overflow-auto">
             <CardHeader>
               <CardTitle>Estoque por Material</CardTitle>
             </CardHeader>
@@ -115,7 +115,6 @@ export default async function HomePage() {
                 <div className="space-y-3">
                   {inventory
                     .sort((a, b) => Number(b.quantity_kg) - Number(a.quantity_kg))
-                    .slice(0, 5)
                     .map((item) => (
                       <div
                         key={item.id}

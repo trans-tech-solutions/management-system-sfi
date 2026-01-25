@@ -24,18 +24,20 @@ export default function LoginPage() {
     setIsLoading(true)
     setError(null)
 
+    let didNavigate = false
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (error) throw error
-      router.push("/")
-      router.refresh()
+      await router.push("/")
+      didNavigate = true
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Erro ao fazer login")
     } finally {
-      setIsLoading(false)
+      if (!didNavigate) setIsLoading(false)
     }
   }
 
@@ -53,7 +55,6 @@ export default function LoginPage() {
             <CardTitle className="text-2xl" style={{ color: "var(--sucatao-black)" }}>
               Acesso ao Sistema
             </CardTitle>
-            <CardDescription>Entre com suas credenciais para acessar o sistema de gestão</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin}>
@@ -92,7 +93,7 @@ export default function LoginPage() {
                 )}
                 <Button
                   type="submit"
-                  className="w-full text-white"
+                  className="w-full text-white hover:scale-105 hover:opacity-90 transition-all"
                   style={{ backgroundColor: "var(--sucatao-blue)" }}
                   disabled={isLoading}
                 >

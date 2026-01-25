@@ -148,7 +148,7 @@ export default function ComprasPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-1">
+          <Card className="lg:col-span-1 h-96">
             <CardHeader>
               <CardTitle>Nova Compra</CardTitle>
             </CardHeader>
@@ -197,7 +197,7 @@ export default function ComprasPage() {
 
           <Card className="lg:col-span-2">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b pb-2">
                 <CardTitle>Compras de Hoje</CardTitle>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">Total do dia</p>
@@ -211,7 +211,7 @@ export default function ComprasPage() {
                   {purchases.map((purchase) => (
                     <div
                       key={purchase.id}
-                      className="flex items-center justify-between border-b border-border pb-3 last:border-0"
+                      className="flex items-center justify-between border-border pb-1 last:border-0"
                     >
                       <div className="flex-1">
                         <p className="font-medium">{purchase.material_name}</p>

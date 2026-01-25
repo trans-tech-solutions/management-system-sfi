@@ -422,12 +422,12 @@ export async function exportCashFlowToExcel(transactions: CashTransactionExport[
   const summaryData = [
     { label: "Saldo Inicial:", value: balance.opening_balance, color: COLORS.blue },
     {
-      label: "Total Entradas:",
+      label: "Entradas:",
       value: transactions.filter((t) => t.transaction_type === "entrada").reduce((sum, t) => sum + Number(t.amount), 0),
       color: "00A65A",
     },
     {
-      label: "Total Saídas:",
+      label: "Saídas:",
       value: transactions.filter((t) => t.transaction_type === "saida").reduce((sum, t) => sum + Number(t.amount), 0),
       color: "DD4B39",
     },
@@ -455,24 +455,24 @@ export async function exportCashFlowToExcel(transactions: CashTransactionExport[
   const currentBalanceRow = worksheet.getRow(7)
   const balanceLabel = currentBalanceRow.getCell(1)
   balanceLabel.value = "SALDO ATUAL:"
-  balanceLabel.font = { bold: true, size: 14, color: { argb: "FF" + COLORS.white } }
+  balanceLabel.font = { bold: true, size: 12, color: { argb: "FF" + COLORS.black } }
   balanceLabel.alignment = { horizontal: "right", vertical: "middle" }
   balanceLabel.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FF" + COLORS.blue },
+    fgColor: { argb: "FF" + COLORS.yellow },
   }
 
   const currentBalance = balance.opening_balance + summaryData[1].value - summaryData[2].value
   const balanceValue = currentBalanceRow.getCell(2)
   balanceValue.value = currentBalance
   balanceValue.numFmt = "R$ #,##0.00"
-  balanceValue.font = { bold: true, size: 14, color: { argb: "FF" + COLORS.white } }
+  balanceValue.font = { bold: true, size: 14, color: { argb: "FF" + COLORS.black } }
   balanceValue.alignment = { horizontal: "left", vertical: "middle" }
   balanceValue.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FF" + COLORS.blue },
+    fgColor: { argb: "FF" + COLORS.yellow },
   }
   currentBalanceRow.height = 25
 

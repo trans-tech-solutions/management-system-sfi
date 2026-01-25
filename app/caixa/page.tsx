@@ -175,15 +175,15 @@ export default function CaixaPage() {
             <h1 className="text-3xl font-bold tracking-tight">Controle de Caixa</h1>
             <p className="text-muted-foreground">Gerencie as entradas e saídas do dia</p>
           </div>
-          <Button onClick={handleExport} className="flex items-center gap-2">
+          <Button variant="outline" className="gap-2 bg-transparent" onClick={handleExport}>
             <Download className="h-4 w-4" />
-            Exportar Planilha
+            Exportar Resumo do Dia
           </Button>
         </div>
 
         {/* Resumo do Caixa */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
+          <Card className="hover:scale-102 transition-transform">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Saldo Inicial</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -195,7 +195,7 @@ export default function CaixaPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:scale-102 transition-transform">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Entradas</CardTitle>
               <ArrowUpCircle className="h-4 w-4 text-green-600" />
@@ -207,7 +207,7 @@ export default function CaixaPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:scale-102 transition-transform">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Saídas</CardTitle>
               <ArrowDownCircle className="h-4 w-4 text-red-600" />
@@ -219,7 +219,7 @@ export default function CaixaPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:scale-102 transition-transform">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Saldo Atual</CardTitle>
               <TrendingUp className="h-4 w-4 text-blue-600" />
@@ -234,7 +234,7 @@ export default function CaixaPage() {
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Formulário */}
-          <Card className="lg:col-span-1">
+          <Card className="lg:col-span-1 max-h-94">
             <CardHeader>
               <CardTitle>Nova Transação</CardTitle>
               <CardDescription>Adicione uma entrada ou saída manual</CardDescription>
@@ -244,7 +244,7 @@ export default function CaixaPage() {
                 <div className="space-y-2">
                   <Label htmlFor="type">Tipo</Label>
                   <Select value={transactionType} onValueChange={(value) => setTransactionType(value as any)}>
-                    <SelectTrigger id="type">
+                    <SelectTrigger id="type" className="hover:cursor-pointer">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
