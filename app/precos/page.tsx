@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -115,7 +114,6 @@ export default function PrecosPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-balance">Tabela de Preços</h1>
@@ -199,7 +197,7 @@ export default function PrecosPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
-                          <p className="text-lg font-semibold text-[var(--color-primary)]">
+                          <p className="text-lg font-semibold text-primary">
                             R$ {material.price_per_kg.toFixed(2)}
                           </p>
                           <Button size="icon" variant="outline" onClick={() => handleStartEdit(material)}>

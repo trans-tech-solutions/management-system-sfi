@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils"
-import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
 import { getTodayBrazil } from "@/lib/date-utils"
@@ -52,7 +51,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-balance">Dashboard</h1>
@@ -94,7 +92,7 @@ export default async function HomePage() {
                         <p className="font-medium">{purchase.material_name}</p>
                         <p className="text-sm text-muted-foreground">{purchase.quantity_kg} kg</p>
                       </div>
-                      <p className="font-semibold text-[var(--color-primary)]">
+                      <p className="font-semibold text-primary">
                         R$ {Number(purchase.total_value).toFixed(2)}
                       </p>
                     </div>
@@ -121,7 +119,7 @@ export default async function HomePage() {
                         className="flex items-center justify-between border-b border-border pb-3 last:border-0"
                       >
                         <p className="font-medium">{item.material_name}</p>
-                        <p className="font-semibold text-[var(--color-secondary)]">
+                        <p className="font-semibold text-primary">
                           {Number(item.quantity_kg).toFixed(2)} kg
                         </p>
                       </div>

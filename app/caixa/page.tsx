@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import { Navigation } from "@/components/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -173,7 +172,6 @@ export default function CaixaPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation />
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
           <p className="text-muted-foreground">Carregando...</p>
         </div>
@@ -183,7 +181,6 @@ export default function CaixaPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
       <main className="mx-auto max-w-7xl space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
@@ -368,9 +365,9 @@ export default function CaixaPage() {
                     >
                       <div className="flex items-start gap-3">
                         {transaction.transaction_type === "entrada" ? (
-                          <ArrowUpCircle className="mt-1 h-5 w-5 flex-shrink-0 text-green-600" />
+                          <ArrowUpCircle className="mt-1 h-5 w-5 shrink-0 text-green-600" />
                         ) : (
-                          <ArrowDownCircle className="mt-1 h-5 w-5 flex-shrink-0 text-red-600" />
+                          <ArrowDownCircle className="mt-1 h-5 w-5 shrink-0 text-red-600" />
                         )}
                         <div className="flex-1">
                           <p className="font-medium">{transaction.description}</p>

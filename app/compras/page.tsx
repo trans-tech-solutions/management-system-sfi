@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -136,7 +135,6 @@ export default function ComprasPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -214,7 +212,7 @@ export default function ComprasPage() {
 
                 <div className="rounded-lg bg-muted p-4">
                   <p className="text-sm text-muted-foreground mb-1">Valor Total</p>
-                  <p className="text-2xl font-bold text-[var(--color-primary)]">R$ {calculatePreview()}</p>
+                  <p className="text-2xl font-bold text-primary">R$ {calculatePreview()}</p>
                 </div>
 
                 <Button type="submit" className="w-full gap-2" disabled={isLoading}>
@@ -231,7 +229,7 @@ export default function ComprasPage() {
                 <CardTitle>Compras de Hoje</CardTitle>
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">Total do dia</p>
-                  <p className="text-xl font-bold text-[var(--color-primary)]">R$ {todayTotal.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-primary">R$ {todayTotal.toFixed(2)}</p>
                 </div>
               </div>
             </CardHeader>
@@ -250,7 +248,7 @@ export default function ComprasPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-[var(--color-primary)]">
+                        <p className="font-semibold text-primary">
                           R$ {Number(purchase.total_value).toFixed(2)}
                         </p>
                         <p className="text-xs text-muted-foreground">{formatTimeBrazil(purchase.created_at)}</p>

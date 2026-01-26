@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Navigation } from "@/components/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +15,7 @@ type InventoryItem = {
   material_name: string
   quantity_kg: number
   last_updated: string
+  price_per_kg?: number
 }
 
 export default function EstoquePage() {
@@ -35,9 +35,19 @@ export default function EstoquePage() {
 
     if (error) {
       toast({ title: "Erro ao carregar estoque", description: error.message, variant: "destructive" })
-    } else {
-      setInventory(data || [])
+      return
     }
+
+    // também buscar preços de compra para calcular o valor em estoque
+    const { data: materialsData } = await supabase.from("materials_prices").select("*")
+    const priceMap = new Map<string, number>((materialsData || []).map((m: any) => [m.material_name, m.price_per_kg]))
+
+    const enriched = (data || []).map((item: any) => ({
+      ...item,
+      price_per_kg: priceMap.get(item.material_name) ?? 0,
+    }))
+
+    setInventory(enriched)
   }
 
   const handleStartEdit = (item: InventoryItem) => {
@@ -111,10 +121,10 @@ export default function EstoquePage() {
   }
 
   const totalQuantity = inventory.reduce((sum, item) => sum + Number(item.quantity_kg), 0)
+  const totalValuePurchase = inventory.reduce((sum, item) => sum + Number(item.quantity_kg) * Number(item.price_per_kg || 0), 0)
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -130,14 +140,21 @@ export default function EstoquePage() {
         <div className="mb-6">
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="flex flex-col items-center mb-4 md:mb-0">
                   <p className="text-sm text-muted-foreground">Total em Estoque</p>
-                  <p className="text-3xl font-bold text-[var(--color-secondary)]">{totalQuantity.toFixed(2)} kg</p>
+                  <p className="text-3xl font-bold text-secondary">{totalQuantity.toFixed(2)} kg</p>
                 </div>
-                <div>
+
+                <div className="flex flex-col items-center">
+                  <p className="text-sm text-muted-foreground">Valor em Estoque</p>
+                  <p className="text-3xl font-bold text-secondary">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValuePurchase)}</p>
+                  <p className="text-xs text-muted-foreground">(valor de compra, não de venda)</p>
+                </div>
+
+                <div className="hidden md:flex flex-col items-center">
                   <p className="text-sm text-muted-foreground">Materiais</p>
-                  <p className="text-3xl font-bold text-[var(--color-accent)]">{inventory.length}</p>
+                  <p className="text-3xl font-bold text-secondary">{inventory.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -177,21 +194,23 @@ export default function EstoquePage() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-3">
-                        <p className="text-lg font-semibold text-[var(--color-secondary)] min-w-25 text-right">
+                      <div className="flex flex-col md:flex-row items-center gap-3">
+                        <p className="text-lg font-semibold text-secondary min-w-25 text-center md:text-right">
                           {item.quantity_kg.toFixed(2)} kg
                         </p>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() => handleRemoveQuantity(item)}
-                          title="Remover quantidade (venda)"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="outline" onClick={() => handleStartEdit(item)}>
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => handleRemoveQuantity(item)}
+                            title="Remover quantidade (venda)"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="outline" onClick={() => handleStartEdit(item)}>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
