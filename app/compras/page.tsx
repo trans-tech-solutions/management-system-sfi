@@ -51,7 +51,7 @@ export default function ComprasPage() {
     const { data, error } = await supabase.from("materials_prices").select("*").order("material_name")
 
     if (error) {
-      toast({ title: "Erro ao carregar materiais", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao carregar materiais.", description: error.message, variant: "destructive" })
     } else {
       setMaterials(data || [])
     }
@@ -66,7 +66,7 @@ export default function ComprasPage() {
       .order("created_at", { ascending: false })
 
     if (error) {
-      toast({ title: "Erro ao carregar compras", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao carregar compras.", description: error.message, variant: "destructive" })
     } else {
       setPurchases(data || [])
     }
@@ -78,14 +78,14 @@ export default function ComprasPage() {
 
     const material = materials.find((m) => m.material_name === selectedMaterial)
     if (!material) {
-      toast({ title: "Erro", description: "Selecione um material", variant: "destructive" })
+      toast({ title: "Erro", description: "Selecione um material.", variant: "destructive" })
       setIsLoading(false)
       return
     }
 
     const quantityNum = Number.parseFloat(quantity)
     if (isNaN(quantityNum) || quantityNum <= 0) {
-      toast({ title: "Erro", description: "Digite uma quantidade válida", variant: "destructive" })
+      toast({ title: "Erro", description: "Digite uma quantidade válida.", variant: "destructive" })
       setIsLoading(false)
       return
     }
@@ -101,9 +101,9 @@ export default function ComprasPage() {
     })
 
     if (error) {
-      toast({ title: "Erro ao registrar compra", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao registrar compra.", description: error.message, variant: "destructive" })
     } else {
-      toast({ title: "Sucesso!", description: "Compra registrada com sucesso" })
+      toast({ title: "Sucesso!", description: "Compra registrada com sucesso." })
       setSelectedMaterial("")
       setQuantity("")
       loadTodayPurchases()
@@ -114,11 +114,11 @@ export default function ComprasPage() {
 
   const handleExportPurchases = () => {
     if (purchases.length === 0) {
-      toast({ title: "Aviso", description: "Não há compras para exportar", variant: "destructive" })
+      toast({ title: "Aviso", description: "Não há compras para exportar.", variant: "destructive" })
       return
     }
     exportPurchasesToExcel(purchases)
-    toast({ title: "Sucesso!", description: "Planilha exportada com sucesso" })
+    toast({ title: "Sucesso!", description: "Planilha exportada com sucesso." })
   }
 
   const calculatePreview = () => {
@@ -257,7 +257,7 @@ export default function ComprasPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-8">Nenhuma compra registrada hoje</p>
+                <p className="text-center text-muted-foreground py-8">Nenhuma compra registrada hoje.</p>
               )}
             </CardContent>
           </Card>

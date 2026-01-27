@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 import { Edit2, Save, X, Download, Minus } from "lucide-react"
+import RemoveQuantityModal from "@/components/ui/remove-quantity-modal"
 import { useToast } from "@/hooks/use-toast"
 import { exportInventoryToExcel } from "@/lib/excel-export"
 import { formatDateTimeBrazil } from "@/lib/date-utils"
@@ -34,7 +35,7 @@ export default function EstoquePage() {
     const { data, error } = await supabase.from("inventory").select("*").order("material_name")
 
     if (error) {
-      toast({ title: "Erro ao carregar estoque", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao carregar estoque.", description: error.message, variant: "destructive" })
       return
     }
 
@@ -63,7 +64,7 @@ export default function EstoquePage() {
   const handleSaveEdit = async (id: string) => {
     const quantityNum = Number.parseFloat(editQuantity)
     if (isNaN(quantityNum) || quantityNum < 0) {
-      toast({ title: "Erro", description: "Digite uma quantidade válida", variant: "destructive" })
+      toast({ title: "Erro", description: "Digite uma quantidade válida.", variant: "destructive" })
       return
     }
 
@@ -74,9 +75,9 @@ export default function EstoquePage() {
       .eq("id", id)
 
     if (error) {
-      toast({ title: "Erro ao atualizar estoque", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao atualizar estoque.", description: error.message, variant: "destructive" })
     } else {
-      toast({ title: "Sucesso!", description: "Estoque atualizado com sucesso" })
+      toast({ title: "Sucesso!", description: "Estoque atualizado com sucesso." })
       setEditingId(null)
       setEditQuantity("")
       loadInventory()
@@ -85,35 +86,53 @@ export default function EstoquePage() {
   }
 
   const handleRemoveQuantity = async (item: InventoryItem) => {
-    const quantityToRemove = prompt(`Quanto deseja remover do estoque de ${item.material_name}? (kg)`)
-    if (!quantityToRemove) return
+    // mantenho função por compatibilidade; fluxo agora usa modal
+    openRemoveModal(item)
+  }
 
-    const removeNum = Number.parseFloat(quantityToRemove)
+  // estado do modal
+  const [removeModalOpen, setRemoveModalOpen] = useState(false)
+  const [removeItem, setRemoveItem] = useState<InventoryItem | null>(null)
+
+  const openRemoveModal = (item: InventoryItem) => {
+    setRemoveItem(item)
+    setRemoveModalOpen(true)
+  }
+
+  const closeRemoveModal = () => {
+    setRemoveItem(null)
+    setRemoveModalOpen(false)
+  }
+
+  const confirmRemove = async (quantityToRemove: number) => {
+    if (!removeItem) return
+    const removeNum = quantityToRemove
     if (isNaN(removeNum) || removeNum <= 0) {
       toast({ title: "Erro", description: "Digite uma quantidade válida", variant: "destructive" })
       return
     }
 
-    const newQuantity = Math.max(0, item.quantity_kg - removeNum)
+    const newQuantity = Math.max(0, removeItem.quantity_kg - removeNum)
 
     setIsLoading(true)
     const { error } = await supabase
       .from("inventory")
       .update({ quantity_kg: newQuantity, last_updated: new Date().toISOString() })
-      .eq("id", item.id)
+      .eq("id", removeItem.id)
 
     if (error) {
-      toast({ title: "Erro ao atualizar estoque", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao atualizar estoque.", description: error.message, variant: "destructive" })
     } else {
       toast({ title: "Sucesso!", description: `${removeNum} kg removidos do estoque` })
       loadInventory()
     }
     setIsLoading(false)
+    closeRemoveModal()
   }
 
   const handleExportInventory = () => {
     if (inventory.length === 0) {
-      toast({ title: "Aviso", description: "Não há itens no estoque para exportar", variant: "destructive" })
+      toast({ title: "Aviso", description: "Não há itens no estoque para exportar.", variant: "destructive" })
       return
     }
     exportInventoryToExcel(inventory)
@@ -202,7 +221,7 @@ export default function EstoquePage() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => handleRemoveQuantity(item)}
+                                onClick={() => openRemoveModal(item)}
                             title="Remover quantidade (venda)"
                           >
                             <Minus className="h-4 w-4" />
@@ -217,10 +236,18 @@ export default function EstoquePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground py-8">Nenhum material em estoque</p>
+              <p className="text-center text-muted-foreground py-8">Nenhum material em estoque.</p>
             )}
           </CardContent>
         </Card>
+        <RemoveQuantityModal
+          open={removeModalOpen}
+          itemName={removeItem?.material_name}
+          maxQuantity={removeItem?.quantity_kg}
+          initialValue={""}
+          onCancel={closeRemoveModal}
+          onConfirm={confirmRemove}
+        />
       </main>
     </div>
   )

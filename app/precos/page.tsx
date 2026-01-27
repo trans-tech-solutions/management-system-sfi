@@ -37,7 +37,7 @@ export default function PrecosPage() {
     const { data, error } = await supabase.from("materials_prices").select("*").order("material_name")
 
     if (error) {
-      toast({ title: "Erro ao carregar materiais", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao carregar materiais.", description: error.message, variant: "destructive" })
     } else {
       setMaterials(data || [])
     }
@@ -56,7 +56,7 @@ export default function PrecosPage() {
   const handleSaveEdit = async (id: string) => {
     const priceNum = Number.parseFloat(editPrice)
     if (isNaN(priceNum) || priceNum <= 0) {
-      toast({ title: "Erro", description: "Digite um preço válido", variant: "destructive" })
+      toast({ title: "Erro", description: "Digite um preço válido.", variant: "destructive" })
       return
     }
 
@@ -67,9 +67,9 @@ export default function PrecosPage() {
       .eq("id", id)
 
     if (error) {
-      toast({ title: "Erro ao atualizar preço", description: error.message, variant: "destructive" })
+      toast({ title: "Erro ao atualizar preço.", description: error.message, variant: "destructive" })
     } else {
-      toast({ title: "Sucesso!", description: "Preço atualizado com sucesso" })
+      toast({ title: "Sucesso!", description: "Preço atualizado com sucesso." })
       setEditingId(null)
       setEditPrice("")
       loadMaterials()
@@ -81,13 +81,13 @@ export default function PrecosPage() {
     e.preventDefault()
 
     if (!newMaterialName.trim()) {
-      toast({ title: "Erro", description: "Digite o nome do material", variant: "destructive" })
+      toast({ title: "Erro", description: "Digite o nome do material.", variant: "destructive" })
       return
     }
 
     const priceNum = Number.parseFloat(newMaterialPrice)
     if (isNaN(priceNum) || priceNum <= 0) {
-      toast({ title: "Erro", description: "Digite um preço válido", variant: "destructive" })
+      toast({ title: "Erro", description: "Digite um preço válido.", variant: "destructive" })
       return
     }
 
@@ -99,12 +99,12 @@ export default function PrecosPage() {
 
     if (error) {
       if (error.code === "23505") {
-        toast({ title: "Erro", description: "Material já cadastrado", variant: "destructive" })
+        toast({ title: "Erro", description: "Material já cadastrado.", variant: "destructive" })
       } else {
-        toast({ title: "Erro ao adicionar material", description: error.message, variant: "destructive" })
+        toast({ title: "Erro ao adicionar material.", description: error.message, variant: "destructive" })
       }
     } else {
-      toast({ title: "Sucesso!", description: "Material adicionado com sucesso" })
+      toast({ title: "Sucesso!", description: "Material adicionado com sucesso." })
       setNewMaterialName("")
       setNewMaterialPrice("")
       loadMaterials()
@@ -209,7 +209,7 @@ export default function PrecosPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-8">Nenhum material cadastrado</p>
+                <p className="text-center text-muted-foreground py-8">Nenhum material cadastrado.</p>
               )}
             </CardContent>
           </Card>

@@ -54,7 +54,7 @@ export default async function HomePage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-balance">Dashboard</h1>
-          <p className="text-muted-foreground">Bem-vinda ao sistema de gestão do Sucatão</p>
+          <p className="text-muted-foreground">Oi :), Bem-vinda ao sistema de gestão do Sucatão.</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -99,7 +99,7 @@ export default async function HomePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-8">Nenhuma compra realizada hoje</p>
+                <p className="text-center text-muted-foreground py-8">Nenhuma compra realizada hoje.</p>
               )}
             </CardContent>
           </Card>
@@ -126,7 +126,7 @@ export default async function HomePage() {
                     ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-8">Nenhum material em estoque</p>
+                <p className="text-center text-muted-foreground py-8">Nenhum material em estoque.</p>
               )}
             </CardContent>
           </Card>

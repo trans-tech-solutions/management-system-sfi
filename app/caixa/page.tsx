@@ -355,7 +355,7 @@ export default function CaixaPage() {
             </CardHeader>
             <CardContent>
               {transactions.length === 0 ? (
-                <p className="py-8 text-center text-muted-foreground">Nenhuma transação registrada hoje</p>
+                <p className="py-8 text-center text-muted-foreground">Nenhuma transação registrada hoje.</p>
               ) : (
                 <div className="space-y-2">
                   {transactions.map((transaction) => (
