@@ -13,7 +13,8 @@ import { ArrowDownCircle, ArrowUpCircle, DollarSign, Download, TrendingUp } from
 import { exportCashFlowToExcel } from "@/lib/excel-export";
 import { getTodayBrazil, formatTimeBrazil } from "@/lib/date-utils";
 import ConfirmDialog from "@/components/ui/confirm-dialog"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
+import { Navigation } from "@/components/navigation";
 
 type CashTransaction = {
   id: string
@@ -181,6 +182,7 @@ export default function CaixaPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <main className="mx-auto max-w-7xl space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>

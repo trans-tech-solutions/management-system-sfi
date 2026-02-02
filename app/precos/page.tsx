@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Edit2, Plus, Save, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { formatDateTimeBrazil } from "@/lib/date-utils"
+import { Navigation } from "@/components/navigation"
 
 type MaterialPrice = {
   id: string
@@ -114,6 +115,7 @@ export default function PrecosPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-balance">Tabela de Preços</h1>

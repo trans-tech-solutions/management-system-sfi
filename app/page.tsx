@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
 import { getTodayBrazil } from "@/lib/date-utils"
 import { ShoppingCart, Package, DollarSign } from "lucide-react"
+import { Navigation } from "@/components/navigation"
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -51,6 +52,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-balance">Dashboard</h1>

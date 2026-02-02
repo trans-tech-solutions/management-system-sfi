@@ -10,6 +10,7 @@ import RemoveQuantityModal from "@/components/ui/remove-quantity-modal"
 import { useToast } from "@/hooks/use-toast"
 import { exportInventoryToExcel } from "@/lib/excel-export"
 import { formatDateTimeBrazil } from "@/lib/date-utils"
+import { Navigation } from "@/components/navigation"
 
 type InventoryItem = {
   id: string
@@ -144,6 +145,7 @@ export default function EstoquePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>

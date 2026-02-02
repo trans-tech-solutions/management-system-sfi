@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { exportPurchasesToExcel } from "@/lib/excel-export"
 import { formatTimeBrazil, getTodayBrazil } from "@/lib/date-utils"
 import ConfirmDialog from "@/components/ui/confirm-dialog"
+import { Navigation } from "@/components/navigation"
 
 
 type MaterialPrice = {
@@ -38,6 +39,8 @@ export default function ComprasPage() {
   const [selectedMaterial, setSelectedMaterial] = useState<string>("")
   const [quantity, setQuantity] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isSameClient, setIsSameClient] = useState(false)
+  const [accumulatedTotal, setAccumulatedTotal] = useState<number>(0)
   const { toast } = useToast()
   const supabase = createClient()
   const [showCleanupConfirm, setShowCleanupConfirm] = useState(false)
@@ -106,11 +109,16 @@ export default function ComprasPage() {
       toast({ title: "Sucesso!", description: "Compra registrada com sucesso." })
       setSelectedMaterial("")
       setQuantity("")
+      if (isSameClient) setAccumulatedTotal((prev) => prev + totalValue)
       loadTodayPurchases()
     }
 
     setIsLoading(false)
   }
+
+  useEffect(() => {
+    if (!isSameClient) setAccumulatedTotal(0)
+  }, [isSameClient])
 
   const handleExportPurchases = () => {
     if (purchases.length === 0) {
@@ -135,6 +143,7 @@ export default function ComprasPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -176,7 +185,7 @@ export default function ComprasPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-1 h-96">
+          <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle>Nova Compra</CardTitle>
             </CardHeader>
@@ -196,6 +205,16 @@ export default function ComprasPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <div className="flex items-center gap-2 mt-4">
+                    <input
+                      id="same-client"
+                      type="checkbox"
+                      checked={isSameClient}
+                      onChange={(e) => setIsSameClient(e.target.checked)}
+                      className="h-4 w-4 rounded border"
+                    />
+                    <Label htmlFor="same-client" className="mb-0!">Mesmo cliente?</Label>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -214,6 +233,13 @@ export default function ComprasPage() {
                   <p className="text-sm text-muted-foreground mb-1">Valor Total</p>
                   <p className="text-2xl font-bold text-primary">R$ {calculatePreview()}</p>
                 </div>
+
+                {isSameClient && (
+                  <div className="rounded-lg bg-muted p-3 mt-2">
+                    <p className="text-sm text-muted-foreground mb-1">Total acumulado (mesmo cliente)</p>
+                    <p className="text-lg font-bold text-primary">R$ {accumulatedTotal.toFixed(2)}</p>
+                  </div>
+                )}
 
                 <Button type="submit" className="w-full gap-2" disabled={isLoading}>
                   <Plus className="h-4 w-4" />
