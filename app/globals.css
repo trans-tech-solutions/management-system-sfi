@@ -135,3 +135,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  .no-print { display: none !important; }
+  .ticket-print { box-shadow: none !important; background: white !important }
+  body { background: white !important }
+}

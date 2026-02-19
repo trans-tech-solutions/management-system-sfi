@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
-import { ShoppingCart, Package, DollarSign, LayoutDashboard, LogOut, Wallet, Download } from "lucide-react"
+import { ShoppingCart, Package, DollarSign, LayoutDashboard, LogOut, Wallet, Download, Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ export function Navigation() {
     { href: "/precos", label: "Tabela de Preços", icon: DollarSign },
     { href: "/estoque", label: "Estoque", icon: Package },
     { href: "/caixa", label: "Caixa", icon: Wallet },
+    { href: "/pesagem", label: "Pesagem", icon: Truck },
   ]
 
   const handleLogout = async () => {
@@ -34,7 +35,7 @@ export function Navigation() {
   }
 
   return (
-    <nav className="border-b border-border bg-card">
+    <nav className="no-print border-b border-border bg-card">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
